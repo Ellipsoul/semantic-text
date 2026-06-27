@@ -9,6 +9,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { EmphasisRenderer } from "@/components/EmphasisRenderer";
 import { RhythmBars } from "@/components/RhythmBars";
 import { WeightLegend } from "@/components/WeightLegend";
+import { WeightSample } from "@/components/WeightSample";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -92,11 +93,19 @@ export default function Home() {
         </section>
       )}
 
-      <footer className="mt-auto flex flex-col gap-3 border-t border-border pt-8">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted">
-          Weight scale
-        </span>
-        <WeightLegend isDark={isDark} />
+      <footer className="mt-auto flex flex-col gap-10 border-t border-border pt-8">
+        <div className="flex flex-col gap-3">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted">
+            Weight scale
+          </span>
+          <WeightLegend isDark={isDark} />
+        </div>
+        <div className="flex flex-col gap-3">
+          <span className="font-mono text-xs uppercase tracking-wider text-muted">
+            Sample · score → weight (0.00–1.00)
+          </span>
+          <WeightSample isDark={isDark} />
+        </div>
       </footer>
     </main>
   );

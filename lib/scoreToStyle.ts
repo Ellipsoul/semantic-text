@@ -18,14 +18,16 @@ export function scoreToWeight(score: number): number {
 }
 
 /**
- * Monochrome ink whose lightness tracks score.
- * Light mode: low score -> soft grey, high score -> near-black.
- * Dark mode:  low score -> dim grey,  high score -> bright.
+ * Monochrome ink whose lightness tracks score, shifted toward the extreme so
+ * text reads crisp rather than grey. The most important words reach pure
+ * black/white; even low-importance words stay dark/bright.
+ * Light mode: low score -> medium grey, high score -> pure black.
+ * Dark mode:  low score -> medium grey, high score -> pure white.
  */
 export function scoreToColor(score: number, isDark: boolean): string {
   const a = adjust(score);
   const v = isDark
-    ? Math.round(90 + a * 150) // 90 (dim) -> 240 (bright)
-    : Math.round(185 - a * 165); // 185 (soft grey) -> 20 (near-black)
+    ? Math.round(155 + a * 100) // 155 -> 255 (toward white)
+    : Math.round(100 - a * 100); // 100 -> 0 (toward black)
   return `rgb(${v}, ${v}, ${v})`;
 }
