@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 import {
   MODEL,
@@ -69,9 +69,9 @@ export async function POST(req: Request): Promise<Response> {
     if (useMock) {
       resolvedScores = mockScore(tokens);
     } else {
-      const result = await generateObject({
+      const result = await generateText({
         model: MODEL,
-        schema,
+        output: Output.object({ schema }),
         system: RUBRIC,
         prompt: `Tokens (${tokens.length}):\n${JSON.stringify(
           tokens,
@@ -81,7 +81,7 @@ export async function POST(req: Request): Promise<Response> {
       outputTokens = result.usage.outputTokens ?? null;
 
       // --- Echo validation: OUR tokens are the source of truth ----------
-      const echo = result.object.scores;
+      const echo = result.output.scores;
       resolvedScores = tokens.map((tok, i) => {
         const entry = echo[i];
         if (

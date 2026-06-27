@@ -29,8 +29,8 @@ export const MAX_INPUT_CHARS = 1000;
  *   Values > 1 push mid-range words apart for clearer hierarchy.
  */
 export const MAPPING = {
-  weightMin: 200,
-  weightMax: 800,
+  weightMin: 360,
+  weightMax: 560,
   contrast: 1.0,
 } as const;
 
