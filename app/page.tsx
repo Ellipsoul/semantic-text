@@ -45,7 +45,7 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:py-24">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:py-24 lg:max-w-5xl">
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">
           Semantic Emphasis

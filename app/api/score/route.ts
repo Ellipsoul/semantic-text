@@ -31,11 +31,16 @@ const schema = z.object({
   ),
 });
 
-/** Is a real AI Gateway credential available? If not, we fall back to the mock. */
-function hasGatewayCreds(): boolean {
-  return Boolean(
-    process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN,
-  );
+/**
+ * The mock scorer is a LOCAL-DEV convenience only. On any Vercel deployment we
+ * ALWAYS attempt the real model — if the Gateway credential is missing there we
+ * want a loud failure (api_error surfaced to the user + telemetry), never a
+ * silent fallback to plausible-but-wrong mock scores. The mock therefore runs
+ * only when off-Vercel and no API key is present (i.e. local dev without creds).
+ */
+function shouldUseMock(): boolean {
+  const onVercel = process.env.VERCEL === "1";
+  return !onVercel && !process.env.AI_GATEWAY_API_KEY;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -62,7 +67,7 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const useMock = !hasGatewayCreds();
+  const useMock = shouldUseMock();
   const model = useMock ? "mock" : MODEL;
 
   let status: ScoringStatus = "ok";
