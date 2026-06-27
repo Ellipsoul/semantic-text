@@ -6,16 +6,23 @@ import {
   MAX_INPUT_CHARS,
   RUBRIC,
   NEUTRAL_SCORE,
+  NORMALIZE_TARGET_MEAN,
 } from "@/lib/config";
 import { recordScoringCall } from "@/lib/telemetry";
 import { tokensEquivalent } from "@/lib/tokenise";
+import { normalizeScores } from "@/lib/normalize";
 import { mockScore } from "@/lib/mockScore";
 import type { ScoredToken, ScoringStatus } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-/** Model echoes each token alongside its score so we can verify alignment. */
+/**
+ * corePoint comes FIRST so the model comprehends the passage before scoring
+ * (the field is generated first, scaffolding the per-token scores). Each score
+ * echoes its token so we can verify alignment by index.
+ */
 const schema = z.object({
+  corePoint: z.string(),
   scores: z.array(
     z.object({
       token: z.string(),
@@ -62,6 +69,7 @@ export async function POST(req: Request): Promise<Response> {
   let errorMessage: string | null = null;
   let driftCount = 0;
   let resolvedScores: number[] = [];
+  let corePoint: string | null = null;
   let inputTokens: number | null = null;
   let outputTokens: number | null = null;
 
@@ -79,6 +87,7 @@ export async function POST(req: Request): Promise<Response> {
       });
       inputTokens = result.usage.inputTokens ?? null;
       outputTokens = result.usage.outputTokens ?? null;
+      corePoint = result.output.corePoint ?? null;
 
       // --- Echo validation: OUR tokens are the source of truth ----------
       const echo = result.output.scores;
@@ -127,16 +136,20 @@ export async function POST(req: Request): Promise<Response> {
     outputTokens,
     status,
     errorMessage,
-    meta: { useMock, driftCount },
+    meta: { useMock, driftCount, corePoint, normalizeTargetMean: NORMALIZE_TARGET_MEAN },
   });
 
+  // Telemetry keeps the raw scores above; the client renders normalized ones so
+  // the average word weight is constant across passages.
+  const displayScores = normalizeScores(resolvedScores, NORMALIZE_TARGET_MEAN);
   const scored: ScoredToken[] = tokens.map((word, i) => ({
     word,
-    score: resolvedScores[i],
+    score: displayScores[i],
   }));
 
   return Response.json({
     tokens: scored,
+    corePoint,
     status: status === "misaligned" ? "misaligned" : "ok",
   });
 }

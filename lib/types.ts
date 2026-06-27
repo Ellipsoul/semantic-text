@@ -19,6 +19,8 @@ export interface ScoreRequest {
 /** Response returned by /api/score on success. */
 export interface ScoreResponse {
   tokens: ScoredToken[];
+  /** The model's one-sentence read of the passage (discourse-grounded v2). */
+  corePoint: string | null;
   /** Status mirrors the telemetry status for client-side awareness. */
   status: "ok" | "misaligned";
 }

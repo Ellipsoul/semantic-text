@@ -37,8 +37,8 @@ export function TextInput({
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Paste a sentence or two and watch its emphasis emerge…"
-        rows={4}
+        placeholder="Paste your passage here and watch its emphasis emerge…"
+        rows={8}
         className="w-full resize-y rounded-xl border border-border bg-surface p-4 text-base leading-relaxed outline-none transition-colors focus:border-foreground/30"
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !disabled) {

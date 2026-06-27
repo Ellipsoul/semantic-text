@@ -20,7 +20,7 @@ export function EmphasisRenderer({
   return (
     <div>
       <p
-        className="text-[clamp(1.5rem,2.2vw+1rem,2.25rem)] leading-[1.8] tracking-[-0.01em]"
+        className="text-[clamp(1.05rem,1.54vw+0.7rem,1.58rem)] leading-[1.8] tracking-[-0.01em]"
         style={{ fontFamily: "var(--font-inter)" }}
       >
         {tokens.map((tok, i) => (

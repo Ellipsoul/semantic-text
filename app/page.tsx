@@ -8,12 +8,12 @@ import { TextInput } from "@/components/TextInput";
 import { ProgressBar } from "@/components/ProgressBar";
 import { EmphasisRenderer } from "@/components/EmphasisRenderer";
 import { RhythmBars } from "@/components/RhythmBars";
-import { WeightLegend } from "@/components/WeightLegend";
 import { WeightSample } from "@/components/WeightSample";
 
 export default function Home() {
   const [text, setText] = useState("");
   const [tokens, setTokens] = useState<ScoredToken[] | null>(null);
+  const [corePoint, setCorePoint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isDark = useIsDark();
@@ -36,6 +36,7 @@ export default function Home() {
 
       const data: ScoreResponse = await res.json();
       setTokens(data.tokens);
+      setCorePoint(data.corePoint);
     } catch {
       setError("Couldn't score that text. Please try again.");
     } finally {
@@ -83,6 +84,14 @@ export default function Home() {
 
       {tokens && !loading && (
         <section className="flex flex-col gap-10">
+          {corePoint && (
+            <p className="max-w-xl text-sm italic leading-relaxed text-muted">
+              <span className="font-mono text-xs not-italic uppercase tracking-wider">
+                The point ·{" "}
+              </span>
+              {corePoint}
+            </p>
+          )}
           <EmphasisRenderer tokens={tokens} isDark={isDark} />
           <div className="flex flex-col gap-3">
             <span className="font-mono text-xs uppercase tracking-wider text-muted">
@@ -93,19 +102,11 @@ export default function Home() {
         </section>
       )}
 
-      <footer className="mt-auto flex flex-col gap-10 border-t border-border pt-8">
-        <div className="flex flex-col gap-3">
-          <span className="font-mono text-xs uppercase tracking-wider text-muted">
-            Weight scale
-          </span>
-          <WeightLegend isDark={isDark} />
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="font-mono text-xs uppercase tracking-wider text-muted">
-            Sample · score → weight (0.00–1.00)
-          </span>
-          <WeightSample isDark={isDark} />
-        </div>
+      <footer className="mt-auto flex flex-col gap-3 border-t border-border pt-8">
+        <span className="font-mono text-xs uppercase tracking-wider text-muted">
+          Sample · score → weight (0.00–1.00)
+        </span>
+        <WeightSample isDark={isDark} />
       </footer>
     </main>
   );
