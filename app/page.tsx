@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
 import { ChevronRight, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokenise } from "@/lib/tokenise";
@@ -39,6 +41,9 @@ export default function Home() {
   // Which level of emphasis the render shows (none / POS / discourse). Shared
   // with the rhythm bars so both views follow the same toggle.
   const [mode, setMode] = useState<EmphasisMode>("emphasis");
+  // Incrementing this invalidates any in-flight scoring response, which keeps
+  // a reset page from being repopulated by an older request.
+  const activeScoreRequestId = useRef(0);
   const isDark = useIsDark();
 
   // Level-1 POS scores, normalized to the v2 mean so the views differ only in
@@ -58,6 +63,8 @@ export default function Home() {
     const clientTokens = tokenise(text);
     if (clientTokens.length === 0) return;
 
+    const requestId = activeScoreRequestId.current + 1;
+    activeScoreRequestId.current = requestId;
     setLoading(true);
     setError(null);
     setSlipped(false);
@@ -73,19 +80,55 @@ export default function Home() {
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
 
       const data: ScoreResponse = await res.json();
+      if (activeScoreRequestId.current !== requestId) return;
+
       setTokens(data.tokens);
       setCorePoint(data.corePoint);
       setSlipped(data.slipped);
       setDriftCount(data.driftCount);
     } catch {
-      setError("Couldn't score that text. Please try again.");
+      if (activeScoreRequestId.current === requestId) {
+        setError("Couldn't score that text. Please try again.");
+      }
     } finally {
-      setLoading(false);
+      if (activeScoreRequestId.current === requestId) {
+        setLoading(false);
+      }
     }
+  }
+
+  function handleReset() {
+    activeScoreRequestId.current += 1;
+    setText("");
+    setTokens(null);
+    setCorePoint(null);
+    setLoading(false);
+    setError(null);
+    setSlipped(false);
+    setDriftCount(0);
+    setHovered(null);
+    setSampleOpen(false);
+    setMode("emphasis");
   }
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:py-24 lg:max-w-5xl">
+      <Link
+        href="/"
+        aria-label="Reset Semantic Emphasis"
+        onClick={handleReset}
+        className="fixed left-4 top-4 z-10 inline-flex size-11 items-center justify-center rounded-2xl border border-foreground/40 bg-background/90 shadow-sm backdrop-blur transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-foreground/50 sm:left-6 sm:top-6"
+      >
+        <Image
+          src="/icon0.svg"
+          alt=""
+          width={32}
+          height={32}
+          priority
+          className="size-8"
+        />
+      </Link>
+
       <header className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Semantic Emphasis

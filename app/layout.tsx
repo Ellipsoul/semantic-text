@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Semantic Emphasis",
+  title: "Semph",
   description:
     "Renders plain text with variable font weights assigned per-word by semantic importance.",
 };
