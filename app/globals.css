@@ -134,5 +134,8 @@ body {
   }
   html {
     @apply font-sans;
+    /* Always reserve the scrollbar gutter so content doesn't shift sideways
+       when the page toggles between fitting the viewport and scrolling. */
+    scrollbar-gutter: stable;
   }
 }
