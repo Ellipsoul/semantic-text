@@ -16,6 +16,9 @@ export default function Home() {
   const [corePoint, setCorePoint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Shared between the rendered words and the rhythm bars so hovering either
+  // highlights its counterpart.
+  const [hovered, setHovered] = useState<number | null>(null);
   const isDark = useIsDark();
 
   async function handleSubmit() {
@@ -24,6 +27,7 @@ export default function Home() {
 
     setLoading(true);
     setError(null);
+    setHovered(null);
 
     try {
       const res = await fetch("/api/score", {
@@ -46,14 +50,14 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:py-24 lg:max-w-5xl">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
+      <header className="flex flex-col gap-3">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Semantic Emphasis
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-muted">
-          Plain text, re-rendered so each word&rsquo;s font weight reflects how
-          much meaning it carries — a typographic view of the sentence&rsquo;s
-          stress profile.
+          Reading is silent, but it has a voice. Paste any passage and watch an
+          AI find the words that carry the meaning — letting their weight rise to
+          the surface while the scaffolding quietly fades into the background.
         </p>
       </header>
 
@@ -92,21 +96,38 @@ export default function Home() {
               {corePoint}
             </p>
           )}
-          <EmphasisRenderer tokens={tokens} isDark={isDark} />
+          <EmphasisRenderer
+            tokens={tokens}
+            isDark={isDark}
+            hovered={hovered}
+            onHover={setHovered}
+          />
           <div className="flex flex-col gap-3">
             <span className="font-mono text-xs uppercase tracking-wider text-muted">
               Rhythm
             </span>
-            <RhythmBars tokens={tokens} isDark={isDark} />
+            <RhythmBars
+              tokens={tokens}
+              isDark={isDark}
+              hovered={hovered}
+              onHover={setHovered}
+            />
           </div>
         </section>
       )}
 
-      <footer className="mt-auto flex flex-col gap-3 border-t border-border pt-8">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted">
-          Sample · score → weight (0.00–1.00)
-        </span>
-        <WeightSample isDark={isDark} />
+      <footer className="mt-auto border-t border-border pt-8">
+        <details className="group flex flex-col gap-3">
+          <summary className="flex cursor-pointer list-none items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-foreground">
+            <span className="inline-block transition-transform group-open:rotate-90">
+              ›
+            </span>
+            Sample · score → weight (0.00–1.00)
+          </summary>
+          <div className="pt-4">
+            <WeightSample isDark={isDark} />
+          </div>
+        </details>
       </footer>
     </main>
   );

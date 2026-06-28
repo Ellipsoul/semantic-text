@@ -1,50 +1,55 @@
 "use client";
 
-import { useState } from "react";
 import type { ScoredToken } from "@/lib/types";
-import { scoreToWeight, scoreToColor } from "@/lib/scoreToStyle";
+import { scoreToWeight, scoreToColor, HIGHLIGHT_COLOR } from "@/lib/scoreToStyle";
 
 /**
  * The hero: renders each word at a variable font weight + monochrome lightness
- * derived from its semantic score. Hovering a word reveals its score/weight.
+ * derived from its semantic score. Hover state is shared with RhythmBars (via
+ * props) so hovering a word also highlights its bar, and vice versa.
  */
 export function EmphasisRenderer({
   tokens,
   isDark,
+  hovered,
+  onHover,
 }: {
   tokens: ScoredToken[];
   isDark: boolean;
+  hovered: number | null;
+  onHover: (index: number | null) => void;
 }) {
-  const [hovered, setHovered] = useState<number | null>(null);
-
   return (
     <div>
       <p
         className="text-[clamp(1.05rem,1.54vw+0.7rem,1.58rem)] leading-[1.8] tracking-[-0.01em]"
         style={{ fontFamily: "var(--font-inter)" }}
       >
-        {tokens.map((tok, i) => (
-          <span
-            key={i}
-            className="inline-block mr-[0.26em] transition-colors duration-150"
-            style={{
-              fontWeight: scoreToWeight(tok.score),
-              color: scoreToColor(tok.score, isDark),
-              outline:
-                hovered === i ? "1px solid color-mix(in srgb, currentColor 30%, transparent)" : "none",
-              outlineOffset: "3px",
-              borderRadius: "2px",
-            }}
-            onMouseEnter={() => setHovered(i)}
-            onMouseLeave={() => setHovered(null)}
-          >
-            {tok.word}
-          </span>
-        ))}
+        {tokens.map((tok, i) => {
+          const isHovered = hovered === i;
+          return (
+            <span
+              key={i}
+              className="inline-block mr-[0.26em] rounded-[3px] px-[2px] transition-colors duration-150"
+              style={{
+                fontWeight: scoreToWeight(tok.score),
+                color: isHovered ? HIGHLIGHT_COLOR : scoreToColor(tok.score, isDark),
+                backgroundColor: isHovered
+                  ? "color-mix(in srgb, " + HIGHLIGHT_COLOR + " 15%, transparent)"
+                  : "transparent",
+                cursor: "default",
+              }}
+              onMouseEnter={() => onHover(i)}
+              onMouseLeave={() => onHover(null)}
+            >
+              {tok.word}
+            </span>
+          );
+        })}
       </p>
 
       <div className="mt-4 h-5 font-mono text-xs text-muted">
-        {hovered !== null && (
+        {hovered !== null && tokens[hovered] && (
           <span>
             &ldquo;{tokens[hovered].word}&rdquo; · score{" "}
             {tokens[hovered].score.toFixed(2)} · weight{" "}

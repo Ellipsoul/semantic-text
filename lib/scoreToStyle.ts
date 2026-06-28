@@ -5,6 +5,9 @@
  */
 import { MAPPING } from "./config";
 
+/** Accent used to link a hovered word with its rhythm bar (and vice versa). */
+export const HIGHLIGHT_COLOR = "#3b82f6";
+
 /** Clamp to [0,1] and apply the contrast exponent. Shared by weight + colour. */
 function adjust(score: number): number {
   const clamped = Math.min(1, Math.max(0, score));
