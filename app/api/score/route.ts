@@ -9,7 +9,7 @@ import {
   NORMALIZE_TARGET_MEAN,
 } from "@/lib/config";
 import { recordScoringCall } from "@/lib/telemetry";
-import { tokensEquivalent } from "@/lib/tokenise";
+import { alignScores } from "@/lib/alignScores";
 import { normalizeScores } from "@/lib/normalize";
 import { mockScore } from "@/lib/mockScore";
 import type { ScoredToken, ScoringStatus } from "@/lib/types";
@@ -73,6 +73,7 @@ export async function POST(req: Request): Promise<Response> {
   let status: ScoringStatus = "ok";
   let errorMessage: string | null = null;
   let driftCount = 0;
+  let slipped = false;
   let resolvedScores: number[] = [];
   let corePoint: string | null = null;
   let inputTokens: number | null = null;
@@ -95,20 +96,15 @@ export async function POST(req: Request): Promise<Response> {
       corePoint = result.output.corePoint ?? null;
 
       // --- Echo validation: OUR tokens are the source of truth ----------
-      const echo = result.output.scores;
-      resolvedScores = tokens.map((tok, i) => {
-        const entry = echo[i];
-        if (
-          entry &&
-          typeof entry.score === "number" &&
-          tokensEquivalent(entry.token, tok)
-        ) {
-          return Math.min(1, Math.max(0, entry.score));
-        }
-        driftCount++;
-        return NEUTRAL_SCORE;
-      });
-      if (driftCount > 0) status = "misaligned";
+      // Resync-tolerant alignment so a single mid-stream slip in the model's
+      // echo doesn't cascade the neutral fallback across the rest of the passage.
+      const aligned = alignScores(tokens, result.output.scores, NEUTRAL_SCORE);
+      resolvedScores = aligned.scores;
+      driftCount = aligned.driftCount;
+      slipped = aligned.slipped;
+      // Any slippage flags misaligned — even when fully recovered (driftCount 0)
+      // — so both telemetry and the user see that the model's echo deviated.
+      if (slipped) status = "misaligned";
     }
   } catch (err) {
     status = "api_error";
@@ -141,7 +137,13 @@ export async function POST(req: Request): Promise<Response> {
     outputTokens,
     status,
     errorMessage,
-    meta: { useMock, driftCount, corePoint, normalizeTargetMean: NORMALIZE_TARGET_MEAN },
+    meta: {
+      useMock,
+      driftCount,
+      slipped,
+      corePoint,
+      normalizeTargetMean: NORMALIZE_TARGET_MEAN,
+    },
   });
 
   // Telemetry keeps the raw scores above; the client renders normalized ones so
@@ -156,5 +158,7 @@ export async function POST(req: Request): Promise<Response> {
     tokens: scored,
     corePoint,
     status: status === "misaligned" ? "misaligned" : "ok",
+    slipped,
+    driftCount,
   });
 }

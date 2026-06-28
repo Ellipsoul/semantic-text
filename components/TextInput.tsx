@@ -2,6 +2,9 @@
 
 import { MAX_INPUT_CHARS } from "@/lib/config";
 import { PRESETS } from "@/lib/presets";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 export function TextInput({
   value,
@@ -22,24 +25,26 @@ export function TextInput({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-2">
         {PRESETS.map((preset) => (
-          <button
+          <Button
             key={preset.label}
             type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-full text-muted-foreground"
             onClick={() => onChange(preset.text)}
             disabled={loading}
-            className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
             {preset.label}
-          </button>
+          </Button>
         ))}
       </div>
 
-      <textarea
+      <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Paste your passage here and watch its emphasis emerge…"
         rows={8}
-        className="w-full resize-y rounded-xl border border-border bg-surface p-4 text-base leading-relaxed outline-none transition-colors focus:border-foreground/30"
+        className="min-h-48 resize-y rounded-xl p-4 text-base leading-relaxed"
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !disabled) {
             onSubmit();
@@ -49,18 +54,21 @@ export function TextInput({
 
       <div className="flex items-center justify-between">
         <span
-          className={`font-mono text-xs ${over ? "text-red-500" : "text-muted"}`}
+          className={cn(
+            "font-mono text-xs",
+            over ? "text-destructive" : "text-muted-foreground",
+          )}
         >
           {value.length} / {MAX_INPUT_CHARS}
         </span>
-        <button
+        <Button
           type="button"
+          className="rounded-full"
           onClick={onSubmit}
           disabled={disabled}
-          className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-opacity disabled:opacity-40"
         >
           {loading ? "Scoring…" : "Render emphasis"}
-        </button>
+        </Button>
       </div>
     </div>
   );

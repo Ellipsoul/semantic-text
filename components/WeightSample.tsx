@@ -20,10 +20,10 @@ export function WeightSample({ isDark }: { isDark: boolean }) {
         const weight = scoreToWeight(score);
         return (
           <div key={score} className="flex items-baseline gap-4">
-            <span className="w-10 shrink-0 font-mono text-xs text-muted tabular-nums">
+            <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
               {score.toFixed(2)}
             </span>
-            <span className="w-10 shrink-0 font-mono text-xs text-muted tabular-nums">
+            <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
               {weight}
             </span>
             <span

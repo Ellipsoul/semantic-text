@@ -23,6 +23,10 @@ export interface ScoreResponse {
   corePoint: string | null;
   /** Status mirrors the telemetry status for client-side awareness. */
   status: "ok" | "misaligned";
+  /** True if the model's echo slipped at all, even when fully recovered. */
+  slipped: boolean;
+  /** Count of tokens that couldn't be aligned and fell back to a neutral weight. */
+  driftCount: number;
 }
 
 /** Telemetry call outcome. Written on every path. */

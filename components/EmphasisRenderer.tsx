@@ -1,12 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import type { ScoredToken } from "@/lib/types";
 import { scoreToWeight, scoreToColor, HIGHLIGHT_COLOR } from "@/lib/scoreToStyle";
+import { Button } from "@/components/ui/button";
+
+type Mode = "plain" | "emphasis";
+
+/** Uniform weight used in the "before" (plain) view — ordinary reading weight. */
+const PLAIN_WEIGHT = 400;
 
 /**
  * The hero: renders each word at a variable font weight + monochrome lightness
- * derived from its semantic score. Hover state is shared with RhythmBars (via
- * props) so hovering a word also highlights its bar, and vice versa.
+ * derived from its semantic score. A before/after toggle flips between the plain
+ * passage and the emphasis rendering so the difference is felt on a click. Hover
+ * state is shared with RhythmBars (via props) so hovering links both ways.
  */
 export function EmphasisRenderer({
   tokens,
@@ -19,10 +27,29 @@ export function EmphasisRenderer({
   hovered: number | null;
   onHover: (index: number | null) => void;
 }) {
+  const [mode, setMode] = useState<Mode>("emphasis");
+  const plain = mode === "plain";
+
   return (
-    <div>
+    <div className="flex flex-col gap-4">
+      <div className="inline-flex self-start gap-0.5 rounded-full border border-border p-0.5">
+        {(["plain", "emphasis"] as const).map((m) => (
+          <Button
+            key={m}
+            type="button"
+            size="sm"
+            variant={mode === m ? "default" : "ghost"}
+            className="rounded-full px-3 text-xs"
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
+          >
+            {m === "plain" ? "Before" : "After"}
+          </Button>
+        ))}
+      </div>
+
       <p
-        className="text-[clamp(1.05rem,1.54vw+0.7rem,1.58rem)] leading-[1.8] tracking-[-0.01em]"
+        className="text-[clamp(0.84rem,1.23vw+0.56rem,1.27rem)] leading-[1.65] tracking-[-0.01em]"
         style={{ fontFamily: "var(--font-inter)" }}
       >
         {tokens.map((tok, i) => {
@@ -32,8 +59,12 @@ export function EmphasisRenderer({
               key={i}
               className="inline-block mr-[0.26em] rounded-[3px] px-[2px] transition-colors duration-150"
               style={{
-                fontWeight: scoreToWeight(tok.score),
-                color: isHovered ? HIGHLIGHT_COLOR : scoreToColor(tok.score, isDark),
+                fontWeight: plain ? PLAIN_WEIGHT : scoreToWeight(tok.score),
+                color: isHovered
+                  ? HIGHLIGHT_COLOR
+                  : plain
+                    ? "var(--foreground)"
+                    : scoreToColor(tok.score, isDark),
                 backgroundColor: isHovered
                   ? "color-mix(in srgb, " + HIGHLIGHT_COLOR + " 15%, transparent)"
                   : "transparent",
@@ -48,7 +79,7 @@ export function EmphasisRenderer({
         })}
       </p>
 
-      <div className="mt-4 h-5 font-mono text-xs text-muted">
+      <div className="h-5 font-mono text-xs text-muted-foreground">
         {hovered !== null && tokens[hovered] && (
           <span>
             &ldquo;{tokens[hovered].word}&rdquo; · score{" "}

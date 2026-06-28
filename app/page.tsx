@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronRight, TriangleAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { tokenise } from "@/lib/tokenise";
 import { useIsDark } from "@/lib/useIsDark";
 import type { ScoredToken, ScoreResponse } from "@/lib/types";
@@ -9,6 +11,13 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { EmphasisRenderer } from "@/components/EmphasisRenderer";
 import { RhythmBars } from "@/components/RhythmBars";
 import { WeightSample } from "@/components/WeightSample";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -16,9 +25,14 @@ export default function Home() {
   const [corePoint, setCorePoint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Whether the model's echo slipped (even if recovered) and how many words
+  // couldn't be aligned — drives the warning banner.
+  const [slipped, setSlipped] = useState(false);
+  const [driftCount, setDriftCount] = useState(0);
   // Shared between the rendered words and the rhythm bars so hovering either
   // highlights its counterpart.
   const [hovered, setHovered] = useState<number | null>(null);
+  const [sampleOpen, setSampleOpen] = useState(false);
   const isDark = useIsDark();
 
   async function handleSubmit() {
@@ -27,6 +41,7 @@ export default function Home() {
 
     setLoading(true);
     setError(null);
+    setSlipped(false);
     setHovered(null);
 
     try {
@@ -41,6 +56,8 @@ export default function Home() {
       const data: ScoreResponse = await res.json();
       setTokens(data.tokens);
       setCorePoint(data.corePoint);
+      setSlipped(data.slipped);
+      setDriftCount(data.driftCount);
     } catch {
       setError("Couldn't score that text. Please try again.");
     } finally {
@@ -54,7 +71,7 @@ export default function Home() {
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Semantic Emphasis
         </h1>
-        <p className="max-w-xl text-sm leading-relaxed text-muted">
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
           Reading is silent, but it has a voice. Paste any passage and watch an
           AI find the words that carry the meaning — letting their weight rise to
           the surface while the scaffolding quietly fades into the background.
@@ -71,25 +88,38 @@ export default function Home() {
       <div className="min-h-[2px]">{loading && <ProgressBar />}</div>
 
       {error && (
-        <div
-          role="alert"
-          className="flex items-center justify-between rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600 dark:text-red-400"
-        >
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="font-medium underline underline-offset-2"
-          >
-            Retry
-          </button>
-        </div>
+        <Alert variant="destructive">
+          <AlertTitle>{error}</AlertTitle>
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span>The scoring request did not go through.</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={handleSubmit}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {tokens && !loading && slipped && (
+        <Alert className="border-amber-500/40 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-500">
+          <TriangleAlert />
+          <AlertTitle>The model&rsquo;s response slipped</AlertTitle>
+          <AlertDescription className="text-amber-700/90 dark:text-amber-400/90">
+            {driftCount === 0
+              ? "The scoring response drifted out of alignment but was automatically realigned — every word still scored correctly."
+              : `The scoring response drifted out of alignment. ${driftCount} word${driftCount === 1 ? "" : "s"} couldn't be matched and ${driftCount === 1 ? "is" : "are"} shown at a neutral weight. Try again for a cleaner result.`}
+          </AlertDescription>
+        </Alert>
       )}
 
       {tokens && !loading && (
         <section className="flex flex-col gap-10">
           {corePoint && (
-            <p className="max-w-xl text-sm italic leading-relaxed text-muted">
+            <p className="max-w-xl text-sm italic leading-relaxed text-muted-foreground">
               <span className="font-mono text-xs not-italic uppercase tracking-wider">
                 The point ·{" "}
               </span>
@@ -103,7 +133,7 @@ export default function Home() {
             onHover={setHovered}
           />
           <div className="flex flex-col gap-3">
-            <span className="font-mono text-xs uppercase tracking-wider text-muted">
+            <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
               Rhythm
             </span>
             <RhythmBars
@@ -117,17 +147,24 @@ export default function Home() {
       )}
 
       <footer className="mt-auto border-t border-border pt-8">
-        <details className="group flex flex-col gap-3">
-          <summary className="flex cursor-pointer list-none items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-foreground">
-            <span className="inline-block transition-transform group-open:rotate-90">
-              ›
-            </span>
+        <Collapsible
+          open={sampleOpen}
+          onOpenChange={setSampleOpen}
+          className="flex flex-col gap-3"
+        >
+          <CollapsibleTrigger className="flex w-fit cursor-pointer items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground">
+            <ChevronRight
+              className={cn(
+                "size-3 transition-transform",
+                sampleOpen && "rotate-90",
+              )}
+            />
             Sample · score → weight (0.00–1.00)
-          </summary>
-          <div className="pt-4">
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4">
             <WeightSample isDark={isDark} />
-          </div>
-        </details>
+          </CollapsibleContent>
+        </Collapsible>
       </footer>
     </main>
   );

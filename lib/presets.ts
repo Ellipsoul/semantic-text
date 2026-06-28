@@ -29,4 +29,28 @@ export const PRESETS: Preset[] = [
     label: "Culinary",
     text: "Begin by melting the dark chocolate slowly over a pan of barely simmering water, stirring gently so that it never overheats and turns grainy. While it cools to just above body temperature, whip the cream until it holds soft, billowing peaks that fold over on themselves rather than standing stiffly upright. The secret to a light mousse lies entirely in this next step: fold the cooled chocolate into the cream with a slow, deliberate motion, lifting from the bottom of the bowl and turning the mixture over itself, taking care not to knock out the air you have just worked so hard to incorporate. Spoon the finished mousse into small glasses, cover them loosely, and let them chill in the refrigerator for at least four hours, or overnight if you can bear to wait. The reward is a dessert that is impossibly smooth, deeply rich, and yet somehow still feels weightless on the tongue.",
   },
+  {
+    label: "Philosophical",
+    text: "We tend to assume that happiness is something to be pursued, as though it were a destination waiting at the end of a long road. Yet the more directly we chase it, the more it seems to recede. Perhaps contentment is less a place we arrive at and more a quality of attention — a way of noticing the small, unremarkable moments that make up the texture of an ordinary life. The afternoon light on a wall, the warmth of a cup held in both hands, a conversation that drifts pleasantly nowhere in particular. These are easy to overlook precisely because they ask nothing of us. And yet, looking back, it is often these forgotten moments, rather than the grand achievements, that we find we treasured most.",
+  },
+  {
+    label: "Sports",
+    text: "With only seconds left on the clock and the crowd on its feet, the young midfielder collected the ball just inside the halfway line. She slipped past one defender, then another, the noise swelling with every stride. As the goalkeeper rushed out to narrow the angle, she paused for a heartbeat, then curled the ball delicately into the far corner. The stadium erupted. It was a goal that would be replayed for years, not merely because it won the championship, but because it captured something rare: the moment when months of relentless preparation collapse into a single, instinctive act of brilliance that no amount of planning could ever guarantee.",
+  },
+  {
+    label: "Business",
+    text: "Every great company begins with an uncomfortable observation: something everyone tolerates but no one has bothered to fix. Our product starts there. Small businesses lose countless hours each month wrestling with invoices, chasing late payments, and reconciling accounts by hand. We replace that drudgery with a single, intuitive dashboard that does the tedious work automatically, so owners can spend their time on the things that actually grow a business. The market is enormous, the problem is universal, and the technology is finally ready. What we are asking for is the chance to bring this to the millions of people who deserve better than spreadsheets and late nights.",
+  },
+  {
+    label: "Nature",
+    text: "At dawn the valley lies hidden beneath a sea of cloud, and only the highest peaks break through, glowing faintly pink in the first light. As the sun climbs, the mist begins to stir and dissolve, revealing terraced fields, a winding river, and a scattering of villages waking slowly to the day. The air is cold and impossibly clear, carrying the distant sound of bells from a herd grazing somewhere out of sight. To stand here, watching an entire landscape emerge from nothing, is to feel both very small and strangely at peace — a reminder that the world is far larger, older, and more beautiful than the narrow corridors of our daily worries.",
+  },
+  {
+    label: "Mystery",
+    text: "The house had been empty for years, or so everyone believed. But on the night of the storm, a single light appeared in the upstairs window, flickering behind the grimy glass. Mrs. Ableton, walking her dog along the lane, stopped and stared. She was certain the place had no electricity; the wires had been cut long ago. And yet there it was, steady now, as if someone inside were waiting. The dog began to growl, low and uneasy, pulling back toward home. For a long moment she hesitated, her hand tightening on the leash, before she noticed the front door — which she could have sworn was locked — standing slightly, invitingly, open.",
+  },
+  {
+    label: "Wellness",
+    text: "Sleep is not a luxury we can borrow against indefinitely; it is the foundation on which nearly everything else depends. During the hours we spend unconscious, the brain quietly does some of its most important work: consolidating memories, clearing away metabolic waste, and restoring the delicate chemical balance that governs mood and concentration. Skimp on it, and the consequences accumulate silently — sharper irritability, foggier thinking, a weaker immune response. The good news is that small, consistent changes make a real difference. A cooler room, a darker space, and a regular bedtime can transform the quality of your rest far more reliably than any expensive supplement ever will.",
+  },
 ];
