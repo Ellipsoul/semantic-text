@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronRight, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokenise } from "@/lib/tokenise";
+import { posScore } from "@/lib/posScore";
+import { normalizeScores } from "@/lib/normalize";
+import { NORMALIZE_TARGET_MEAN } from "@/lib/config";
 import { useIsDark } from "@/lib/useIsDark";
-import type { ScoredToken, ScoreResponse } from "@/lib/types";
+import type { ScoredToken, ScoreResponse, EmphasisMode } from "@/lib/types";
 import { TextInput } from "@/components/TextInput";
 import { ProgressBar } from "@/components/ProgressBar";
 import { EmphasisRenderer } from "@/components/EmphasisRenderer";
@@ -33,7 +36,23 @@ export default function Home() {
   // highlights its counterpart.
   const [hovered, setHovered] = useState<number | null>(null);
   const [sampleOpen, setSampleOpen] = useState(false);
+  // Which level of emphasis the render shows (none / POS / discourse). Shared
+  // with the rhythm bars so both views follow the same toggle.
+  const [mode, setMode] = useState<EmphasisMode>("emphasis");
   const isDark = useIsDark();
+
+  // Level-1 POS scores, normalized to the v2 mean so the views differ only in
+  // distribution. Computed once per scored passage, reused by text + bars.
+  const posScores = useMemo(
+    () =>
+      tokens
+        ? normalizeScores(
+            posScore(tokens.map((t) => t.word)),
+            NORMALIZE_TARGET_MEAN,
+          )
+        : [],
+    [tokens],
+  );
 
   async function handleSubmit() {
     const clientTokens = tokenise(text);
@@ -128,7 +147,10 @@ export default function Home() {
           )}
           <EmphasisRenderer
             tokens={tokens}
+            posScores={posScores}
             isDark={isDark}
+            mode={mode}
+            onModeChange={setMode}
             hovered={hovered}
             onHover={setHovered}
           />
@@ -138,7 +160,9 @@ export default function Home() {
             </span>
             <RhythmBars
               tokens={tokens}
+              posScores={posScores}
               isDark={isDark}
+              mode={mode}
               hovered={hovered}
               onHover={setHovered}
             />

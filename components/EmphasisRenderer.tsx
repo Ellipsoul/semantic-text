@@ -1,49 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import type { ScoredToken } from "@/lib/types";
+import type { ScoredToken, EmphasisMode } from "@/lib/types";
 import { scoreToWeight, scoreToColor, HIGHLIGHT_COLOR } from "@/lib/scoreToStyle";
 import { Button } from "@/components/ui/button";
 
-type Mode = "plain" | "emphasis";
+/** Uniform weight used in the "none" view — ordinary reading weight. */
+export const PLAIN_WEIGHT = 400;
 
-/** Uniform weight used in the "before" (plain) view — ordinary reading weight. */
-const PLAIN_WEIGHT = 400;
+const MODES: { value: EmphasisMode; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "pos", label: "POS" },
+  { value: "emphasis", label: "Semantic" },
+];
 
 /**
- * The hero: renders each word at a variable font weight + monochrome lightness
- * derived from its semantic score. A before/after toggle flips between the plain
- * passage and the emphasis rendering so the difference is felt on a click. Hover
- * state is shared with RhythmBars (via props) so hovering links both ways.
+ * The hero: renders each word at a variable font weight + monochrome lightness.
+ * The three-way mode (owned by the page, shared with RhythmBars) steps through
+ * the progression of the work — no emphasis, Level-1 POS-keyed emphasis, and the
+ * current discourse-level (v2) emphasis. Hover state is shared with RhythmBars.
  */
 export function EmphasisRenderer({
   tokens,
+  posScores,
   isDark,
+  mode,
+  onModeChange,
   hovered,
   onHover,
 }: {
   tokens: ScoredToken[];
+  posScores: number[];
   isDark: boolean;
+  mode: EmphasisMode;
+  onModeChange: (mode: EmphasisMode) => void;
   hovered: number | null;
   onHover: (index: number | null) => void;
 }) {
-  const [mode, setMode] = useState<Mode>("emphasis");
-  const plain = mode === "plain";
+  /** The score driving the current view for token i (null in "none"). */
+  const scoreFor = (i: number): number | null => {
+    if (mode === "none") return null;
+    return mode === "pos" ? posScores[i] : tokens[i].score;
+  };
+
+  const hoveredScore = hovered === null ? null : scoreFor(hovered);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="inline-flex self-start gap-0.5 rounded-full border border-border p-0.5">
-        {(["plain", "emphasis"] as const).map((m) => (
+        {MODES.map((m) => (
           <Button
-            key={m}
+            key={m.value}
             type="button"
             size="sm"
-            variant={mode === m ? "default" : "ghost"}
+            variant={mode === m.value ? "default" : "ghost"}
             className="rounded-full px-3 text-xs"
-            onClick={() => setMode(m)}
-            aria-pressed={mode === m}
+            onClick={() => onModeChange(m.value)}
+            aria-pressed={mode === m.value}
           >
-            {m === "plain" ? "Before" : "After"}
+            {m.label}
           </Button>
         ))}
       </div>
@@ -54,17 +68,18 @@ export function EmphasisRenderer({
       >
         {tokens.map((tok, i) => {
           const isHovered = hovered === i;
+          const score = scoreFor(i);
           return (
             <span
               key={i}
-              className="inline-block mr-[0.26em] rounded-[3px] px-[2px] transition-colors duration-150"
+              className="inline-block mr-[0.26em] rounded-[3px] px-[2px] transition-all duration-150"
               style={{
-                fontWeight: plain ? PLAIN_WEIGHT : scoreToWeight(tok.score),
+                fontWeight: score === null ? PLAIN_WEIGHT : scoreToWeight(score),
                 color: isHovered
                   ? HIGHLIGHT_COLOR
-                  : plain
+                  : score === null
                     ? "var(--foreground)"
-                    : scoreToColor(tok.score, isDark),
+                    : scoreToColor(score, isDark),
                 backgroundColor: isHovered
                   ? "color-mix(in srgb, " + HIGHLIGHT_COLOR + " 15%, transparent)"
                   : "transparent",
@@ -82,9 +97,10 @@ export function EmphasisRenderer({
       <div className="h-5 font-mono text-xs text-muted-foreground">
         {hovered !== null && tokens[hovered] && (
           <span>
-            &ldquo;{tokens[hovered].word}&rdquo; · score{" "}
-            {tokens[hovered].score.toFixed(2)} · weight{" "}
-            {scoreToWeight(tokens[hovered].score)}
+            &ldquo;{tokens[hovered].word}&rdquo;
+            {hoveredScore === null
+              ? " · plain · weight " + PLAIN_WEIGHT
+              : ` · ${mode === "pos" ? "POS " : ""}score ${hoveredScore.toFixed(2)} · weight ${scoreToWeight(hoveredScore)}`}
           </span>
         )}
       </div>

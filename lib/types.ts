@@ -7,6 +7,12 @@ export interface ScoredToken {
 }
 
 /**
+ * Which emphasis level the render is showing — the progression of the work.
+ * none: plain text · pos: Level-1 POS-keyed · emphasis: discourse-level (v2).
+ */
+export type EmphasisMode = "none" | "pos" | "emphasis";
+
+/**
  * POST body sent from the client to /api/score.
  * `tokens` is the client's source-of-truth array (what will be rendered);
  * `text` is the full original string, sent as discourse context for the model.
