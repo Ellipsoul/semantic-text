@@ -91,9 +91,13 @@ export default function Home() {
           Semantic Emphasis
         </h1>
         <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Reading is silent, but it has a voice. Paste any passage and watch an
-          AI find the words that carry the meaning — letting their weight rise to
-          the surface while the scaffolding quietly fades into the background.
+          In speech, we have many dimensions to express emphasis and meaning
+          beyond just our words. Today, text remains monotone and expressionless,
+          but we can give it a voice.
+        </p>
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+          Enter your passage here, and feel the weight and meaning of your
+          words.
         </p>
       </header>
 
